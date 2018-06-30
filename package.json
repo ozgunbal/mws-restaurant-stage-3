@@ -5,6 +5,7 @@
   "description": "a Sails application",
   "keywords": [],
   "dependencies": {
+    "idb": "^2.1.3",
     "include-all": "^1.0.0",
     "rc": "1.0.1",
     "sails": "^0.12.13",
@@ -12,7 +13,13 @@
   },
   "scripts": {
     "debug": "node debug app.js",
-    "start": "node app.js"
+    "prestart": "gulp copy min-concat-css && npm run bundle && npm run sw-bundle",
+    "start": "node app.js",
+    "gulp": "gulp",
+    "dev": "gulp copy min-concat-css && npm run dev-bundle && npm run sw-bundle && node app.js",
+    "sw-bundle": "webpack sw=./client/sw.js --output-path=./.tmp/public --output-filename='[name].js' --module-bind js=babel-loader",
+    "bundle": "webpack main=./client/js/main.js restaurant_info=./client/js/restaurant_info.js --output-path='./.tmp/public/js' --output-filename='[name].bundle.js' --module-bind js=babel-loader",
+    "dev-bundle": "webpack main=./client/js/main.js restaurant_info=./client/js/restaurant_info.js --output-path='./.tmp/public/js' --output-filename='[name].bundle.js' --mode=development --module-bind js=babel-loader"
   },
   "main": "app.js",
   "repository": {
@@ -21,5 +28,18 @@
   },
   "author": "Brandy Lee Camacho",
   "linkedIn": "https://www.linkedin.com/in/brandycamacho/",
-  "email": "brandy@udacity.com"
+  "email": "brandy@udacity.com",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "concurrently": "^3.6.0",
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^3.9.4",
+    "gulp-concat-css": "^3.1.0",
+    "merge-stream": "^1.0.1",
+    "webpack": "^4.14.0",
+    "webpack-cli": "^3.0.8"
+  }
 }

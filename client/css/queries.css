@@ -1,0 +1,49 @@
+/* ====================== Main Media Queries ====================== */
+
+@media screen and (min-width: 1151px) {
+    body {
+        margin: auto;
+        background-color: #f3f3f3
+    }
+}
+
+@media screen and (max-width: 1150px) {
+    #restaurants-list li {
+        width: 35%;
+    }
+}
+
+@media screen and (max-width: 750px) {
+    #restaurants-list li {
+        width: 75%;
+    }
+    .filter-options h2 {
+        width: 100%;
+        text-align: center;
+        margin: 10px 0;
+    }
+    #neighborhoods-select-wrapper, 
+    #cuisines-select-wrapper {
+        text-align: center;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .filter-options h2 {
+        margin-top: 1em;
+    }
+    .filter-options select {
+        width: 43%;
+    }
+
+    #map {
+        height: 250px;
+    }
+    #neighborhoods-select-wrapper, 
+    #cuisines-select-wrapper {
+        width: 100%;
+    }
+}
+
+
+

@@ -1,0 +1,48 @@
+/* ====================== Restaurant Media Queries ====================== */
+
+@media screen and (max-width: 750px) {
+    #restaurants-list li {
+        width: 75%;
+    }
+    #breadcrumb {
+        width: initial;
+    }
+    #maincontent {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .inside header, 
+    .inside #footer {
+        position: relative;
+        width: inherit;
+    }
+
+    nav, 
+    #breadcrumb {
+        position: fixed;
+    }
+
+    #breadcrumb {
+        top: 80px;
+        width: 100%;
+    }
+
+    .inside #map-container {
+        width: 100%;
+        height: 400px;
+        display: block;
+        position: relative;
+    }
+
+    #restaurant-container, 
+    #reviews-container {
+        width: 100%;
+    }
+
+    #restaurant-container {
+        padding: 100px 0 30px;
+    }
+
+}
