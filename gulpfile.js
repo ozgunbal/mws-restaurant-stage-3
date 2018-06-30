@@ -12,10 +12,17 @@ const copy = () => (
     )
 )
 
-const css = () => {
-    return gulp.src('./client/css/*.css')
+const mainCss = () => {
+    return gulp.src(['./client/css/styles.css', './client/css/queries.css'])
         .pipe(cleanCss())
-        .pipe(concatCss('style.min.css'))
+        .pipe(concatCss('mainStyles.min.css'))
+        .pipe(gulp.dest('./.tmp/public/css/'));
+}
+
+const restaurantCss = () => {
+    return gulp.src(['./client/css/styles.css', './client/css/restaurantQueries.css'])
+        .pipe(cleanCss())
+        .pipe(concatCss('restaurantStyles.min.css'))
         .pipe(gulp.dest('./.tmp/public/css/'));
 }
 
@@ -24,5 +31,6 @@ const watch = () => {
 }
 
 gulp.task('copy', copy);
-gulp.task('default', ['copy', 'min-concat-css'], watch);
-gulp.task('min-concat-css', css);
+gulp.task('default', ['copy', 'main-concat-css','restaurant-concat-css'], watch);
+gulp.task('main-concat-css', mainCss);
+gulp.task('restaurant-concat-css', restaurantCss);

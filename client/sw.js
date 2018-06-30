@@ -10,7 +10,8 @@ self.addEventListener('install', (event) => {
                 '/restaurant.html',
                 '/js/main.bundle.js',
                 '/js/restaurant_info.bundle.js',
-                '/css/style.min.css',
+                '/css/mainStyles.min.css',
+                '/css/restaurantStyles.min.css',
                 '/manifest.json'
             ])
         )).catch(error => console.log(error))

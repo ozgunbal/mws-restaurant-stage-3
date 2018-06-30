@@ -16,7 +16,7 @@
     "prestart": "gulp copy min-concat-css && npm run bundle && npm run sw-bundle",
     "start": "node app.js",
     "gulp": "gulp",
-    "dev": "gulp copy min-concat-css && npm run dev-bundle && npm run sw-bundle && node app.js",
+    "dev": "gulp copy main-concat-css restaurant-concat-css && npm run dev-bundle && npm run sw-bundle && node app.js",
     "sw-bundle": "webpack sw=./client/sw.js --output-path=./.tmp/public --output-filename='[name].js' --module-bind js=babel-loader",
     "bundle": "webpack main=./client/js/main.js restaurant_info=./client/js/restaurant_info.js --output-path='./.tmp/public/js' --output-filename='[name].bundle.js' --module-bind js=babel-loader",
     "dev-bundle": "webpack main=./client/js/main.js restaurant_info=./client/js/restaurant_info.js --output-path='./.tmp/public/js' --output-filename='[name].bundle.js' --mode=development --module-bind js=babel-loader"
