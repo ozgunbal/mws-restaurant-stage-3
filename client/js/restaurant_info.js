@@ -80,6 +80,10 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
+  const favouriteButton = document.querySelector('.fav-btn');
+  favouriteButton.dataset.id = restaurant.id;
+  favouriteButton.dataset.favourite = restaurant.is_favorite;
+
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
@@ -179,7 +183,7 @@ const createReviewHTML = (review) => {
     {
       type: 'p',
       props: {
-        innerHTML: `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`,
+        innerHTML: `${date.toLocaleDateString()}`,
         className: 'reviewer-date'
       }
     }
@@ -254,3 +258,12 @@ const getParameterByName = (name, url) => {
 document.addEventListener('DOMContentLoaded', (event) => {
   offlineLoad();
 });
+
+const favButton = document.querySelector('.fav-btn');
+favButton.addEventListener('click', (event) => {
+  const button = event.target.parentNode.parentNode;
+  const { id, favourite } = event.target.parentNode.parentNode.dataset;
+  DBHelper.favouriteRestaurant(id, favourite).then(choice => {
+    button.dataset.favourite = choice;
+  })
+})

@@ -19,10 +19,11 @@ const fetchNeighborhoods = () => {
 /**
  * Renders DOM Element with given properties and attributes
  */
-function renderElement({ type, props = {}, attributes = {} }) {
+function renderElement({ type, props = {}, attributes = {}, children = [] }) {
   const element = document.createElement(type);
   Object.keys(props).forEach(key => element[key] = props[key]);
   Object.keys(attributes).forEach(key => element.setAttribute(key, attributes[key]));
+  children.forEach(child => element.appendChild(child));
   return element;
 }
 
@@ -34,7 +35,7 @@ const fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
   neighborhoods.forEach(neighborhood => {
     const option = renderElement({
       type: 'option',
-      props: { 
+      props: {
         innerHTML: neighborhood,
         value: neighborhood
       },
@@ -134,6 +135,18 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
     ul.append(createRestaurantHTML(restaurant));
   });
   addMarkersToMap();
+
+  const favButtons = document.querySelectorAll('.fav-btn');
+  favButtons.forEach(favButton => {
+    favButton.addEventListener('click', (event) => {
+      const button = event.target;
+      const { id, favourite } = event.target.dataset;
+      DBHelper.favouriteRestaurant(id, favourite).then(choice => {
+        button.innerHTML = choice ? 'Remove from Favourite' : 'Add to Favourite'
+        button.dataset.favourite = choice;
+      })
+    })
+  });
 }
 
 /**
@@ -141,6 +154,15 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
  */
 const createRestaurantHTML = (restaurant) => {
   const li = renderElement({ type: 'li' });
+
+  const favouriteSVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" height="50" width="46">
+      <polygon points="19.8, 2.2, 6.6, 43.56, 39.6, 17.16, 0, 17.16, 33, 43.56" style="fill-rule:nonzero;"/>
+    </svg>`;
+
+  const parser = new DOMParser();
+  const favouriteButton = parser.parseFromString(favouriteSVG, "image/svg+xml").documentElement;
+  console.log(favouriteButton);
 
   const itemChildren = [
     {
@@ -151,10 +173,16 @@ const createRestaurantHTML = (restaurant) => {
         alt: DBHelper.imageAltTextForRestaurant(restaurant)
       }
     },
+    
     {
       type: 'h2',
       props: { innerHTML: restaurant.name },
       attributes: { role: 'heading', tabIndex: 0 }
+    },
+    {
+      type: 'div',
+      attributes: { class: 'fav-btn', "data-id": restaurant.id, "data-favourite": restaurant.is_favorite },
+      children: [favouriteButton]
     },
     {
       type: 'p',

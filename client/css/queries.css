@@ -5,11 +5,23 @@
         margin: auto;
         background-color: #f3f3f3
     }
+
+    .fav-btn {
+        position: absolute;
+        top: 1%;
+        left: 8%;
+    }
 }
 
 @media screen and (max-width: 1150px) {
     #restaurants-list li {
         width: 35%;
+    }
+
+    .fav-btn {
+        position: absolute;
+        top: 1%;
+        left: 8%;
     }
 }
 

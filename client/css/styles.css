@@ -156,6 +156,7 @@ list-style: none;
   justify-content: space-evenly;
 }
 #restaurants-list li {
+  position: relative;
   background-color: #fff;
   border: 2px solid #ccc;
   font-family: Arial,sans-serif;
@@ -331,4 +332,41 @@ list-style: none;
 }
 #restaurant-hours td {
   color: #666;
+}
+
+.fav-btn {
+  position: absolute;
+  left: 4%;
+}
+
+.fav-btn[data-favourite="true"] polygon{
+  fill: #ffd055;
+}
+
+.fav-btn[data-favourite="true"]:hover::after{
+  content: 'Remove from Favourites';
+  position: relative;
+  color: #ffffff;
+  font-weight: 1000;
+}
+
+.fav-btn[data-favourite="false"]:hover::after{
+  content: 'Add to Favourites';
+  position: relative;
+  color: #ffffff;
+  font-weight: 1000;
+}
+
+.fav-btn[data-favourite="false"] polygon{
+  fill: #d8d8d8;
+}
+
+.fav-btn[data-favourite="true"]:hover polygon{
+  fill: #d8d8d8;
+  cursor: pointer;
+}
+
+.fav-btn[data-favourite="false"]:hover polygon{
+  fill: #ffd055;
+  cursor: pointer;
 }
