@@ -4,6 +4,7 @@ const dbPromise = idb.open('restaurant-review', 1, upgradeDb => {
   var store = upgradeDb.createObjectStore('restaurants', {
     keyPath: 'id'
   })
+  var reviewStore = upgradeDb.createObjectStore('reviews', { keyPath: 'id'});
 });
 
 /**
@@ -17,14 +18,14 @@ class DBHelper {
    */
   static get DATABASE_URL() {
     const port = 1337; // Change this to your server port
-    return `http://localhost:${port}/restaurants`;
+    return `http://localhost:${port}`;
   }
 
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants() {
-    return fetch(DBHelper.DATABASE_URL)
+    return fetch(`${DBHelper.DATABASE_URL}/restaurants`)
       .then(response => response.json());
   }
 
@@ -180,6 +181,63 @@ class DBHelper {
     return marker;
   }
 
+  /**
+   * Gets reviews from IndexDb by restaurant id
+   * @param {number} id
+   */
+  static getReviewsByRestaurandId (id) {
+    return dbPromise.then(db => {
+      if(!db) return;
+
+      return db.transaction('reviews')
+        .objectStore('reviews').getAll().then(reviews => 
+          reviews.filter(review => review.restaurant_id == id)
+        );
+    })
+  }
+
+  /**
+   * Fetch reviews for restaurant with given id
+   * @param {number} id 
+   */
+  static fetchReviewsByRestaurantId(id) {
+    return fetch(`${DBHelper.DATABASE_URL}/reviews/?restaurant_id=${id}`)
+      .then(response => response.json());
+  }
+
+  /**
+   * If relevant data exits at IndexDb, server from there
+   * else fetch from API
+   * @param {number} id 
+   */
+  static fetchOrServeReviewsByRestaurantIdFromIdb (id) {
+    return DBHelper.getReviewsByRestaurandId(id).then(reviews => {
+      if (reviews.length > 0) {
+        return reviews;
+      } else {
+        return DBHelper.fetchReviewsByRestaurantId(id).then(reviews => {
+          DBHelper.putReviews(reviews);
+          return reviews;
+        })
+      }
+    })
+  }
+  
+  /**
+  * Puts given review data to IndexDb
+  * @param {Object[]} reviews 
+  */
+  static putReviews(reviews) {
+    dbPromise.then(db => {
+      if(!db) return;
+
+      const tx = db.transaction('reviews', 'readwrite');
+      const store = tx.objectStore('reviews');
+      reviews.forEach(review => {
+        store.put(review);
+      });
+    })
+  }
 }
 
 export default DBHelper;

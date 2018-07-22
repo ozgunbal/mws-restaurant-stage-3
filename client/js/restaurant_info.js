@@ -62,8 +62,11 @@ const fetchRestaurantFromURL = (callback) => {
   } else {
     DBHelper.fetchRestaurantById(id).then(restaurant => {
       self.restaurant = restaurant;
-      fillRestaurantHTML();
-      callback(null, restaurant)
+      DBHelper.fetchOrServeReviewsByRestaurantIdFromIdb(id).then(reviews => {
+        self.reviews = reviews;
+        fillRestaurantHTML();
+        callback(null, restaurant)
+      });
     }).catch(error => console.error(error));
   }
 }
@@ -122,7 +125,7 @@ const fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hour
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+const fillReviewsHTML = (reviews = self.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = renderElement({
     type: 'h3',
@@ -164,6 +167,7 @@ const createReviewHTML = (review) => {
     props: { className: 'reviewer-top' }
   });
 
+  const date = new Date(review.updatedAt);
   const reviewTopChildren = [
     {
       type: 'p',
@@ -175,7 +179,7 @@ const createReviewHTML = (review) => {
     {
       type: 'p',
       props: {
-        innerHTML: review.date,
+        innerHTML: `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`,
         className: 'reviewer-date'
       }
     }
