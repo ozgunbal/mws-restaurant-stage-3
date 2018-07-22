@@ -241,10 +241,14 @@ class DBHelper {
 
   static favouriteRestaurant(restaurantId, isFavourite) {
     const choice = isFavourite == "true";
-    console.log(`${this.DATABASE_URL}/restaurants/${restaurantId}/?is_favorite=${!choice}`);
     return fetch(`${this.DATABASE_URL}/restaurants/${restaurantId}/?is_favorite=${!choice}`, {
       method: 'PUT'
     }).then((res) => res.json()).then(restaurant => restaurant.is_favorite == "true");
+  }
+
+  static addNewReview (data) {
+    return fetch(`${this.DATABASE_URL}/reviews`, { method: 'POST', body: JSON.stringify(data) })
+      .then(res => res.json());
   }
 }
 

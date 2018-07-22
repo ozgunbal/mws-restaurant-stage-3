@@ -154,6 +154,10 @@ const fillReviewsHTML = (reviews = self.reviews) => {
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
+  const form = createReviewFormHTML();
+  ul.appendChild(form)
+  const formButton = document.querySelector('#review-form-button')
+  formButton.addEventListener('click', sendFormData);
   container.appendChild(ul);
 }
 
@@ -221,9 +225,113 @@ const createReviewHTML = (review) => {
   });
 
   li.appendChild(reviewTop);
-  li.appendChild(reviewBottom);  
+  li.appendChild(reviewBottom);
 
   return li;
+}
+
+function sendFormData () {
+  const name = document.querySelector('#review-form-name').value;
+  const rating = document.querySelector('#review-form-rating').value;
+  const comments = document.querySelector('#review-form-comments').value;
+
+  DBHelper.addNewReview({
+    restaurant_id: self.restaurant.id,
+    name,
+    rating,
+    comments
+  });
+}
+
+const createReviewFormHTML = () => {
+  const form = renderElement({
+    type: 'li',
+  });
+
+  const formTop = renderElement({
+    type: 'div',
+    props: { className: 'reviewer-top' }
+  });
+
+  const formTopChildren = [
+    {
+      type: 'p',
+      props: {
+        innerHTML: "Name:",
+        className: 'reviewer-name'
+      }
+    },
+    {
+      type: 'input',
+      props: {
+        className: 'reviewer-date'
+      },
+      attributes: {
+        type: 'text',
+        id: 'review-form-name'
+      }
+    }
+  ];
+
+  formTopChildren.forEach(child => {
+    formTop.appendChild(
+      renderElement(child)
+    )
+  });
+
+  const formBottom = renderElement({
+    type: 'div',
+    props: { className: 'reviewer-bottom' }
+  });
+
+  const formBottomChildren = [
+    {
+      type: 'span',
+      props: {
+        innerHTML: `Rating: `,
+        className: 'reviewer-rating'
+      }
+    },
+    {
+      type: 'input',
+      attributes: {
+        type: 'number',
+        id: "review-form-rating"
+      }
+    },
+    {
+      type: 'br'
+    },
+    {
+      type: 'p',
+      props: { innerHTML: 'Comment:' },
+      attributes: {
+        style: "margin-top: 10px"
+      }
+    },
+    {
+      type: 'textarea',
+      attributes: {
+        id: 'review-form-comments'
+      }
+    },
+    {
+      type: 'button',
+      props: { innerHTML: 'Add Review' },
+      attributes: { id: 'review-form-button' }
+    }
+  ];
+
+  formBottomChildren.forEach(child => {
+    formBottom.appendChild(
+      renderElement(child)
+    )
+  });
+
+  form.appendChild(formTop);
+  form.appendChild(formBottom);
+
+  return form;
 }
 
 /**
