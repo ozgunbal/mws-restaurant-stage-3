@@ -1,3 +1,5 @@
+import DBHelper from './js/dbhelper';
+
 const staticCacheName = "restaurant-v1";
 const imageCache = "restaurant-images";
 const allCaches = [staticCacheName, imageCache];
@@ -49,10 +51,44 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
+self.addEventListener('sync', function (event) {
+    if (event.tag === "reviews") {
+        event.waitUntil(
+            DBHelper.idBPendingStore('readonly').then(pendingStore =>
+                pendingStore.getAll()
+            ).then(reviews =>
+                // send the reviews to the server
+                Promise.all(reviews.map(review => (
+                    fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+                        method: 'POST',
+                        body: JSON.stringify(review),
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(resp => resp.json())
+                    .then(sentReview => {
+                        // Delete pending reviews
+                        DBHelper.idBPendingStore('readwrite').then(pendingStore => 
+                            pendingStore.delete(sentReview.id)
+                        )
+                        // Put reviews into their store sync with the serverDB
+                        DBHelper.idBReviewStore('readwrite').then(reviewStore =>
+                            reviewStore.put(sentReview)
+                        )
+                    })
+                ))
+                ).catch(err => console.error(err))
+            )
+        )
+    }
+});
+
 function serverFromCache(request, cacheName, matchOptions) {
-    return caches.open(cacheName).then((cache) => 
-        cache.match(request.url, matchOptions).then((response) => 
-            response ? 
+    return caches.open(cacheName).then((cache) =>
+        cache.match(request.url, matchOptions).then((response) =>
+            response ?
                 response :
                 fetch(request).then((networkResponse) => {
                     cache.put(request.url, networkResponse.clone());

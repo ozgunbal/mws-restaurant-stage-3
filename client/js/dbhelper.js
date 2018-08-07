@@ -1,10 +1,11 @@
 import idb from 'idb';
 
-const dbPromise = idb.open('restaurant-review', 1, upgradeDb => {
+export const dbPromise = idb.open('restaurant-review', 1, upgradeDb => {
   var store = upgradeDb.createObjectStore('restaurants', {
     keyPath: 'id'
   })
-  var reviewStore = upgradeDb.createObjectStore('reviews', { keyPath: 'id'});
+  var reviewStore = upgradeDb.createObjectStore('reviews', { keyPath: 'id' });
+  var pendingStore = upgradeDb.createObjectStore('pending', { keyPath: 'id' });
 });
 
 /**
@@ -34,7 +35,7 @@ class DBHelper {
    * else fetch from API
    * 
    */
-  static fetchOrServeFromIdb () {
+  static fetchOrServeFromIdb() {
     return DBHelper.getRestaurants().then(restaurants => {
       if (restaurants.length > 0) {
         return restaurants;
@@ -51,9 +52,9 @@ class DBHelper {
    * Writes given restaurants data to IndexDb
    * @param {Object[]} restaurants 
    */
-  static putRestaurants (restaurants) {
+  static putRestaurants(restaurants) {
     dbPromise.then(db => {
-      if(!db) return;
+      if (!db) return;
 
       const tx = db.transaction('restaurants', 'readwrite');
       const store = tx.objectStore('restaurants');
@@ -66,9 +67,9 @@ class DBHelper {
   /**
    * Get restaurants data from IndexDb
    */
-  static getRestaurants () {
+  static getRestaurants() {
     return dbPromise.then(db => {
-      if(!db) return;
+      if (!db) return;
 
       return db.transaction('restaurants')
         .objectStore('restaurants').getAll();
@@ -90,7 +91,7 @@ class DBHelper {
    * Fetch restaurants by a cuisine type with proper error handling.
    */
   static fetchRestaurantByCuisine(cuisine) {
-    return DBHelper.fetchOrServeFromIdb().then(restaurants => 
+    return DBHelper.fetchOrServeFromIdb().then(restaurants =>
       restaurants.filter(r => r.cuisine_type == cuisine)
     );
   }
@@ -165,7 +166,7 @@ class DBHelper {
    */
   static imageAltTextForRestaurant(restaurant) {
     return restaurant.alternateText;
-  }  
+  }
 
   /**
    * Map marker for a restaurant.
@@ -176,7 +177,8 @@ class DBHelper {
       title: restaurant.name,
       url: DBHelper.urlForRestaurant(restaurant),
       map: map,
-      animation: google.maps.Animation.DROP}
+      animation: google.maps.Animation.DROP
+    }
     );
     return marker;
   }
@@ -185,15 +187,25 @@ class DBHelper {
    * Gets reviews from IndexDb by restaurant id
    * @param {number} id
    */
-  static getReviewsByRestaurandId (id) {
-    return dbPromise.then(db => {
-      if(!db) return;
+  static getReviewsByRestaurandId(id) {
+    const reviewsFromIdb = dbPromise.then(db => {
+      if (!db) return;
 
       return db.transaction('reviews')
-        .objectStore('reviews').getAll().then(reviews => 
+        .objectStore('reviews').getAll().then(reviews =>
           reviews.filter(review => review.restaurant_id == id)
         );
-    })
+    });
+
+    const pendingReviews = DBHelper.idBPendingStore('readonly').then(pendingStore =>
+      pendingStore.getAll().then(reviews =>
+        reviews.filter(review => review.restaurant_id == id)
+      )
+    );
+
+    return Promise.all([reviewsFromIdb,pendingReviews]).then(reviews => 
+      [].concat.apply(...reviews)
+    );
   }
 
   /**
@@ -210,7 +222,7 @@ class DBHelper {
    * else fetch from API
    * @param {number} id 
    */
-  static fetchOrServeReviewsByRestaurantIdFromIdb (id) {
+  static fetchOrServeReviewsByRestaurantIdFromIdb(id) {
     return DBHelper.getReviewsByRestaurandId(id).then(reviews => {
       if (reviews.length > 0) {
         return reviews;
@@ -222,14 +234,14 @@ class DBHelper {
       }
     })
   }
-  
+
   /**
   * Puts given review data to IndexDb
   * @param {Object[]} reviews 
   */
   static putReviews(reviews) {
     dbPromise.then(db => {
-      if(!db) return;
+      if (!db) return;
 
       const tx = db.transaction('reviews', 'readwrite');
       const store = tx.objectStore('reviews');
@@ -241,14 +253,50 @@ class DBHelper {
 
   static favouriteRestaurant(restaurantId, isFavourite) {
     const choice = isFavourite == "true";
-    return fetch(`${this.DATABASE_URL}/restaurants/${restaurantId}/?is_favorite=${!choice}`, {
+    return fetch(`${DBHelper.DATABASE_URL}/restaurants/${restaurantId}/?is_favorite=${!choice}`, {
       method: 'PUT'
     }).then((res) => res.json()).then(restaurant => restaurant.is_favorite == "true");
   }
 
-  static addNewReview (data) {
-    return fetch(`${this.DATABASE_URL}/reviews`, { method: 'POST', body: JSON.stringify(data) })
-      .then(res => res.json());
+  static addNewReview(reviewData) {
+    return navigator.serviceWorker.ready.then(reg => {
+      if ('sync' in reg) {
+        DBHelper.idBPendingStore('readwrite').then(reviewStore => reviewStore.put(reviewData))
+          .then(() => {
+            reg.sync.register('reviews');
+          }).catch(err => {
+            console.error(err);
+            fetch(`${DBHelper.DATABASE_URL}/reviews`, { method: 'POST', body: JSON.stringify(reviewData) })
+              .then(res => res.json());
+          })
+      }
+    });
+  }
+
+  static idBReviewStore(mode) {
+    return dbPromise.then(db => {
+      if (!db) return Promise.reject();
+
+      const tx = db.transaction('reviews', mode);
+      const store = tx.objectStore('reviews');
+      return store;
+    });
+  }
+
+  static idBPendingStore(mode) {
+    return dbPromise.then(db => {
+      if (!db) return Promise.reject();
+
+      const tx = db.transaction('pending', mode);
+      const store = tx.objectStore('pending');
+      return store;
+    });
+  }
+
+  static getId () {
+    // This can change to uuid
+    // Numbers given between 1000 and 2000
+    return 1000 + Math.floor(Math.random() * 100);
   }
 }
 

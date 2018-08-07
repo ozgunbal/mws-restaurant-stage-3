@@ -363,10 +363,12 @@ list-style: none;
 
 .fav-btn[data-favourite="true"]:hover polygon{
   fill: #d8d8d8;
+  transform: scale(1.1);
   cursor: pointer;
 }
 
 .fav-btn[data-favourite="false"]:hover polygon{
   fill: #ffd055;
+  transform: scale(1.1);
   cursor: pointer;
 }

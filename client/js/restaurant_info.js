@@ -230,22 +230,40 @@ const createReviewHTML = (review) => {
   return li;
 }
 
-function sendFormData () {
-  const name = document.querySelector('#review-form-name').value;
-  const rating = document.querySelector('#review-form-rating').value;
-  const comments = document.querySelector('#review-form-comments').value;
+function sendFormData() {
+  let name = document.querySelector('#review-form-name').value;
+  let rating = document.querySelector('#review-form-rating').value;
+  let comments = document.querySelector('#review-form-comments').value;
 
-  DBHelper.addNewReview({
+  const newReview = {
     restaurant_id: self.restaurant.id,
     name,
     rating,
-    comments
-  });
+    comments,
+    id: DBHelper.getId(),
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+
+  DBHelper.addNewReview(newReview)
+    .then(() => {
+      // Clearing form data
+      name = "";
+      rating = "";
+      comments = "";
+
+      //Adding new review to list
+      const ul = document.getElementById('reviews-list');
+      document.querySelector("[role='form']").remove()
+      ul.appendChild(createReviewHTML(newReview));
+      ul.appendChild(createReviewFormHTML());
+    })
 }
 
 const createReviewFormHTML = () => {
   const form = renderElement({
     type: 'li',
+    attributes: { role: 'form' }
   });
 
   const formTop = renderElement({
