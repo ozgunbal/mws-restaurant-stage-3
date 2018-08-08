@@ -139,10 +139,9 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
   const favButtons = document.querySelectorAll('.fav-btn');
   favButtons.forEach(favButton => {
     favButton.addEventListener('click', (event) => {
-      const button = event.target;
-      const { id, favourite } = event.target.dataset;
+      const button = event.target.parentNode.parentNode;
+      const { id, favourite } = button.dataset;
       DBHelper.favouriteRestaurant(id, favourite).then(choice => {
-        button.innerHTML = choice ? 'Remove from Favourite' : 'Add to Favourite'
         button.dataset.favourite = choice;
       })
     })
@@ -162,7 +161,6 @@ const createRestaurantHTML = (restaurant) => {
 
   const parser = new DOMParser();
   const favouriteButton = parser.parseFromString(favouriteSVG, "image/svg+xml").documentElement;
-  console.log(favouriteButton);
 
   const itemChildren = [
     {
