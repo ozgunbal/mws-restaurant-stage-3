@@ -39,6 +39,7 @@
     "gulp-clean-css": "^3.9.4",
     "gulp-concat-css": "^3.1.0",
     "merge-stream": "^1.0.1",
+    "sharp": "^0.20.5",
     "webpack": "^4.14.0",
     "webpack-cli": "^3.0.8"
   }
