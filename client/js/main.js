@@ -88,7 +88,7 @@ window.initMap = () => {
     scrollwheel: false
   });
   self.markers = [];
-  updateRestaurants();
+  updateRestaurants().then(() => imageLazyLoad());
 }
 
 /**
@@ -104,7 +104,7 @@ const updateRestaurants = () => {
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood)
+  return DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood)
     .then(restaurants => {
       resetRestaurants(restaurants);
       fillRestaurantsHTML();
@@ -167,11 +167,14 @@ const createRestaurantHTML = (restaurant) => {
       type: 'img',
       props: {
         className: 'restaurant-img',
-        src: DBHelper.imageUrlForRestaurant(restaurant),
+        src: '../img/placeholder-image.webp',
         alt: DBHelper.imageAltTextForRestaurant(restaurant)
+      },
+      attributes: {
+        'data-src' :  DBHelper.imageUrlForRestaurant(restaurant)
       }
     },
-    
+
     {
       type: 'h2',
       props: { innerHTML: restaurant.name },
@@ -237,11 +240,35 @@ const registerServiceWorker = () => {
 }
 
 /**
+ * Image lazy loading for performance
+ */
+function imageLazyLoad() {
+  const lazyImages = document.querySelectorAll('img.restaurant-img');
+  if ("IntersectionObserver" in window) {
+    let lazyImageObserver = new IntersectionObserver(function (entries, observer) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          let lazyImage = entry.target;
+          lazyImage.src = lazyImage.dataset.src;
+          lazyImageObserver.unobserve(lazyImage);
+        }
+      });
+    });
+
+    lazyImages.forEach(function (lazyImage) {
+      lazyImageObserver.observe(lazyImage);
+    });
+  } else {
+    console.log('IntersectionObserver could not found!');
+  }
+}
+
+/**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
   registerServiceWorker();
   fetchNeighborhoods();
   fetchCuisines();
-  if (!navigator.onLine) updateRestaurants();
+  if (!navigator.onLine) updateRestaurants().then(() => imageLazyLoad());
 });
